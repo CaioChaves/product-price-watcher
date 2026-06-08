@@ -35,12 +35,40 @@ product-price-watcher/
 
 ## Getting Started
 
-### Prerequisites
+### Method 1: Docker Local Stack (Recommended)
 
-- **Node.js** >= 18 (or via Homebrew/nvm)
+The easiest way to run the entire application stack is using Docker. You only need **Docker** (with Compose) and **Make** installed on your host system.
+
+```bash
+# 1. Spin up the application stack in detached mode
+make local-stack-up
+
+# 2. Seed the database with dummy products (optional, for development)
+make local-stack-seed
+
+# 3. View container status
+make local-stack-ps
+```
+
+Once up, the services are accessible at:
+- **Frontend Dashboard**: [http://localhost:8080](http://localhost:8080)
+- **Backend API**: [http://localhost:3001](http://localhost:3001)
+
+#### Useful Docker Makefile commands:
+- `make local-stack-logs` — Tail and follow the logs of all containers.
+- `make local-stack-seed` — Execute the seed script inside the running container.
+- `make local-stack-down` — Stop and tear down the stack. The SQLite database is preserved inside a persistent Docker volume (`backend-data`).
+
+---
+
+### Method 2: Manual Host Setup (Without Docker)
+
+#### Prerequisites
+
+- **Node.js** >= 18
 - **npm** >= 9
 
-### 1. Backend Setup
+#### 1. Backend Setup
 
 ```bash
 cd backend
@@ -57,7 +85,7 @@ npm run dev
 
 The backend will run at **http://localhost:3001**.
 
-### 2. Frontend Setup
+#### 2. Frontend Setup
 
 ```bash
 cd frontend
