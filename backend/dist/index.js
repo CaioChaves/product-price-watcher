@@ -17,8 +17,49 @@ const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3001;
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
+const debugLog = (payload) => {
+    fetch('http://127.0.0.1:7273/ingest/00ba8ebd-6ff8-4652-a093-db2b1c4b91f5', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'a99cbd' },
+        body: JSON.stringify({ sessionId: 'a99cbd', ...payload, timestamp: Date.now() })
+    }).catch(() => { });
+};
 // Logger middleware
 app.use((req, res, next) => {
+    const startedAt = Date.now();
+    // #region agent log
+    debugLog({
+        runId: 'run-1',
+        hypothesisId: 'H1_H2_H3_H5',
+        location: 'backend/src/index.ts:request-entry',
+        message: 'Incoming request reached backend',
+        data: {
+            method: req.method,
+            path: req.path,
+            originalUrl: req.originalUrl,
+            host: req.headers.host || null,
+            origin: req.headers.origin || null,
+            xForwardedFor: req.headers['x-forwarded-for'] || null,
+            remoteAddress: req.socket.remoteAddress || null
+        }
+    });
+    // #endregion
+    res.on('finish', () => {
+        // #region agent log
+        debugLog({
+            runId: 'run-1',
+            hypothesisId: 'H2_H4_H5',
+            location: 'backend/src/index.ts:request-finish',
+            message: 'Backend response completed',
+            data: {
+                method: req.method,
+                originalUrl: req.originalUrl,
+                statusCode: res.statusCode,
+                durationMs: Date.now() - startedAt
+            }
+        });
+        // #endregion
+    });
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
     next();
 });
@@ -232,8 +273,35 @@ app.post('/api/alerts/:id/toggle', (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+app.use('/api', (req, res) => {
+    // #region agent log
+    debugLog({
+        runId: 'run-1',
+        hypothesisId: 'H2_H5',
+        location: 'backend/src/index.ts:api-not-found',
+        message: 'Unmatched API route hit backend',
+        data: {
+            method: req.method,
+            originalUrl: req.originalUrl
+        }
+    });
+    // #endregion
+    res.status(404).json({ error: 'API route not found' });
+});
 // --- Boot express app and background scheduler ---
 app.listen(PORT, () => {
+    // #region agent log
+    debugLog({
+        runId: 'run-1',
+        hypothesisId: 'H4',
+        location: 'backend/src/index.ts:startup',
+        message: 'Backend startup completed',
+        data: {
+            port: PORT,
+            nodeEnv: process.env.NODE_ENV || null
+        }
+    });
+    // #endregion
     console.log(`🚀 Backend server successfully booted and listening on port ${PORT}`);
     // Start the background scraping jobs
     (0, scheduler_1.startScheduler)();
