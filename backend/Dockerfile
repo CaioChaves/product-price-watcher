@@ -26,7 +26,7 @@ COPY --from=builder /usr/src/app/dist ./dist
 
 RUN mkdir -p data
 
-ENV PORT=3001
-EXPOSE 3001
+ENV PORT=8080
+EXPOSE 8080
 
 CMD ["npm", "run", "start"]

@@ -17,6 +17,10 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:80"
+    environment:
+      - BACKEND_HOST=backend
+      - BACKEND_PORT=3001
+      - PORT=80
     depends_on:
       - backend
     restart: always
